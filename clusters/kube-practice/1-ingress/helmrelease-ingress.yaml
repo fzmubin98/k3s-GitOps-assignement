@@ -1,0 +1,51 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+spec:
+  interval: 1m
+  install:
+    createNamespace: true
+  chart:
+    spec:
+      chart: ingress-nginx
+      version: "4.11.7"
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx
+        namespace: flux-system
+  values:
+    controller:
+      service:
+        type: LoadBalancer
+      config:
+        custom-http-errors: "404"
+        plugins: "redirect_404"
+      extraVolumes:
+        - name: lua-plugins
+          emptyDir: {}
+      extraInitContainers:
+        - name: init-clone-plugins
+          image: k8s.gcr.io/git-sync/git-sync:v3.7.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GIT_SYNC_REPO
+              value: "https://github.com/fzmubin98/k3s-GitOps-assignement.git"
+            - name: GIT_SYNC_BRANCH
+              value: "main"
+            - name: GIT_SYNC_ROOT
+              value: "/lua_plugins"
+            - name: GIT_SYNC_DEST
+              value: "clusters/kube-practice/plugins"
+            - name: GIT_SYNC_ONE_TIME
+              value: "true"
+            - name: GIT_SYNC_DEPTH
+              value: "1"
+          volumeMounts:
+            - name: lua-plugins
+              mountPath: /lua_plugins
+      extraVolumeMounts:
+        - name: lua-plugins
+          mountPath: /etc/nginx/lua/plugins
+          subPath: clusters/kube-practice/plugins
