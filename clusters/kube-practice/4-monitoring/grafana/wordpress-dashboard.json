@@ -1,0 +1,54 @@
+{
+  "title": "WordPress Overview",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "WordPress Pod CPU Usage",
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace='wordpress',pod=~'wordpress-.*'}[1m]))",
+          "legendFormat": "{{pod}}"
+        }
+      ],
+      "yaxes": [
+        { "format": "percent", "label": "CPU", "min": 0, "max": 1 }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "WordPress Pod Memory Usage",
+      "targets": [
+        {
+          "expr": "sum(container_memory_usage_bytes{namespace='wordpress',pod=~'wordpress-.*'})",
+          "legendFormat": "{{pod}}"
+        }
+      ],
+      "yaxes": [
+        { "format": "bytes", "label": "Memory", "min": 0 }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "WordPress Logs",
+      "targets": [
+        {
+          "expr": "{namespace='wordpress',pod=~'wordpress-.*'}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "MySQL Connections",
+      "targets": [
+        {
+          "expr": "mysql_global_status_threads_connected{namespace='wordpress'}",
+          "legendFormat": "Connections"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 30,
+  "version": 1,
+  "refresh": "30s"
+}
